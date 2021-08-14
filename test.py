@@ -40,11 +40,11 @@ for line in stdin:
      
     elif (":" == words[0][len(words[0])-1]):  #to check for the presence of a label
         c=0
-        for i in words[0]:
+        for i in words[0][:len(words[0])]:
             if ( i.isalnum() or i== "_"):    #to check if label is made of alphabets numbers and underscores
                 c+=1
            
-        if c== len(words[0]):  #checks if all characters are valid     
+        if c== len(words[0])-1:  #checks if all characters are valid     
             if words[0] not in variables:  #checks if label name already a variable
                 if words[0] not in labels:  #checks for duplicacy
                     labels.append(words[0])
@@ -154,16 +154,38 @@ for line in stdin:
             break
             
 # now if the above code doesn't run then its either a variable declaration or typo in instruction name
-    elif (words[0]=='var' and len(used_instr)==0):# len(used_instr) ensures that no other instr was used before a var declaration
-        if (words[0].isalnum() ):
-            if('_' in words[0]):
-                variables.append(words[1])
+   
+    elif(words[0]=='var')
+#         no=0
+#         for v in used_instr:
+#             if v== "var":
+#                 no+=1
+
+        if len(variables) == len(used_instr): # to check if the var instruction is being used in the starting of the code
+            c=0
+            for i in words[1]:
+                if ( i.isalnum() or i== "_"):    #to check if variable is made of alphabets numbers and underscores
+                    c+=1
+
+            if c== len(words[1]):  #checks if all characters are valid     
+                if words[1] not in labels:  #checks if variable name already a variable
+                    if words[1] not in variables:  #checks for duplicacy
+                        variables.append(words[1])
+                    else:  
+                        error_msg+= "Variable already defined."
+                        break
+                else: 
+                    error_msg+= "Misuse of lables as variables."
+                    break
+            else:
+                error_msg+="Improper variable naming"
+                break
+            
         else:
-            error_msg+="Improper variable naming"
+            error_msg+="variables not declared at the top"
             break
-    elif(words[0]=='var' and len(used_instr)>0):
-        error_msg+="variables not declared at the top"
-        break
+    
+            
     elif(words[0] not in instructions):
         error_msg+="Typo in instruction name"
         break
