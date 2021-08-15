@@ -109,15 +109,22 @@ def passone():
                     label_line[words[0][:len(words[0])-1]]=line_number-1
             Isa.write(line)
             if (hlt_flag):
-                if (line == "\n"):
+                if (len(line.strip()) == 0):
                     Isa.close()
                     break
                 else :
+                    if ("hlt" in line.lower()):
                     
-                    error_msg+= "hlt instruction is not the last instruction\n"
-                    ex = 1
-                    Isa.close()
-                    break
+                        error_msg+= "Multiple hlt instructions\n"
+                        ex = 1
+                        Isa.close()
+                        break
+                    else:
+                        error_msg+= "hlt instruction is not the last instruction\n"
+                        ex = 2
+                        Isa.close()
+                        break
+
     
         
             if ("hlt" in line.strip()):
@@ -149,6 +156,11 @@ variable_lines = {}
 # most print commands here are debug statements
 passone()
 error_msg = ""
+
+if (ex == 1):
+    error_msg += "Multiple hlt instructions\n"
+elif (ex == 2):
+    error_msg += "Hlt used multipl times \n"
 
 Isa = open("isa.txt",'r')
 for line in Isa.readlines():
