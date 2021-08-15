@@ -1,1 +1,1 @@
-Wrong syntax for mov 
+Hlt not last line 

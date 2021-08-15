@@ -151,6 +151,7 @@ ex = 0
 label_line = {}
 flag_spot = 0
 variable_lines = {}
+linecount = 0
 
 
 # most print commands here are debug statements
@@ -160,7 +161,7 @@ error_msg = ""
 if (ex == 1):
     error_msg += "Multiple hlt instructions\n"
 elif (ex == 2):
-    error_msg += "Hlt used multipl times \n"
+    error_msg += "Hlt not last line \n"
 
 Isa = open("isa.txt",'r')
 for line in Isa.readlines():
@@ -235,11 +236,12 @@ for line in Isa.readlines():
                     
                     binary_code= opcode+('0'*5)+reg1+reg2+"\n"
                     binary.write(binary_code)
+                    linecount += 1
                 else:
-                    error_msg+="Invalid Register naming"
+                    error_msg+="Invalid Register naming at linenumber " + str(linecount)
                     break
             else:
-                error_msg+="Invalid Syntax for "+words[0]+"\n"
+                error_msg+="Invalid Syntax for "+words[0]+"at linenumber " +str(linecount) +'\n'
                 break
         # similar to the above one the following 2 types follow the same pattern
         elif (instr_type=='B'):
@@ -253,7 +255,7 @@ for line in Isa.readlines():
                     immedaite = variables[words[2]]
                 
                 else:
-                    error_msg += "Invalid Syntax for " + words[0] + "\n"
+                    error_msg += "Invalid Syntax for " + words[0] + "at linenumber " +str(linecount) +"\n"
                     
                     break
                
@@ -264,14 +266,16 @@ for line in Isa.readlines():
                     
 
                     binary.write(binary_code)
+                    linecount += 1
                 else:
                     immedaite = convert_to_binary(immedaite)
                     immedaite = immedaite[-9:-1]
                     binary_code = opcode + reg + immedaite + "\n"
                     binary.write(binary_code)
+                    linecount += 1
                     
             else:
-                error_msg+="Invalid Syntax for "+words[0]+"\n"
+                error_msg+="Invalid Syntax for "+words[0]+"at linenumber " +linecount +"\n"
                 break
         elif (instr_type == 'D'):
             
@@ -289,17 +293,25 @@ for line in Isa.readlines():
                     
                     binary_code = opcode + reg+(8-len(memory))*'0' + memory+ '\n'
                     binary.write(binary_code)
+                    linecount += 1
                     
                     
                 elif(len(words[2]) == 8):
+                    k = 0
+                    for i in mem_address:
+                        if (i == '0' or '1'):
+                            k+=1
+                    if (k!= 8):
+                        error_msg += "Invalid Memory for "  + "at linenumber " +str(linecount) +'\n'
                     binary_code = opcode + reg + words[2] + '\n'
                     binary.write(binary_code)
+                    linecount += 1
                 else:
-                    error_msg += "Uninitialized memory for " + words[2] + '\n'
+                    error_msg += "Undefined variable "  +" at linenumber " +str(linecount) + '\n'
                     break
                     
             else:
-                error_msg += "Invalid Syntax for "+words[0] + '\n'
+                error_msg += "Invalid Syntax for "+words[0] + " at linenumber " +str(linecount) +'\n'
                 break
         elif instr_type=='A':
             if(len(words)==4):  
@@ -313,11 +325,12 @@ for line in Isa.readlines():
                     binary_code=opcode+"00"+reg1+reg2+reg3+"\n"
                     # print(binary_code)
                     binary.write(binary_code)
+                    linecount += 1
                 else:
                     error_msg+="Syntax Error\n"
                     break
             else:
-                error_msg+="Invalid Syntax for "+words[0]+"\n"
+                error_msg+="Invalid Syntax for "+words[0]+"at linenumber " +str(linecount )+"\n"
                 break
         elif instr_type=='E':
             if(len(words)==2):  
@@ -327,28 +340,35 @@ for line in Isa.readlines():
                     mem_address= (convert_to_binary(label_line[words[1]]))
                     mem_address = (8-len(mem_address))*'0' + mem_address
 
-                else :
-                    continue
+                
                     #print("fail")
                 if(len(mem_address)==8):
+                    k = 0
+                    for i in mem_address:
+                        if (i == '0' or '1'):
+                            k+=1
+                    if (k!= 8):
+                        error_msg += "Invalid Memory for " + words[0] + "at linenumber " +str(linecount) +'\n'
                     binary_code=opcode+("0"*3)+mem_address+"\n"
                     binary.write(binary_code)
+                    linecount += 1
                 else:
-                    error_msg+="Syntax Error\n"
+                    error_msg+="Undefined label "  +"at linenumber " +str(linecount) + '\n'
                     break
             else:
-                error_msg+="Invalid Syntax for "+words[0]+"\n"
+                error_msg+="Invalid Syntax for "+words[0]+" at linenumber " +str(linecount)+"\n"
                 break
         elif instr_type=="F":
             if(len(words)==1):
                 binary_code= opcode+("0"*11)+"\n"
                 binary.write(binary_code)
+                linecount += 1
                 break
             else:
-                error_msg+="Invalid Syntax for "+words[0]+"\n"
+                error_msg+="Invalid Syntax for "+words[0]+"at linenumber " +str(linecount) +"\n"
                 break
         if opcode==None:
-            error_msg+="invalid instruction name\n"
+            error_msg+="invalid instruction name"+"at linenumber " +str(linecount) +"\n"
             break
             
 # now if the above code doesn't run then its either a variable declaration or typo in instruction name
@@ -362,6 +382,7 @@ for line in Isa.readlines():
             variables.append(words[1])
             variable_lines[words[1]] = line_number
             line_number +=1
+            
         else:
             error_msg+="Improper variable naming"
             break
