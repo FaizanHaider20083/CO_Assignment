@@ -58,7 +58,30 @@ def label_check(line,iteration):
         if len(words)== 0: #checks if an instruction is followed by the name or not
             error_msg+="Label not followed by an instruction."  
             return False
-    
+
+  
+def syntax (type, line):                                #checks for the syntax
+    list= line.split()
+    global error_msg                                    #to use the error_msg
+    if(len(list)!= wordsNumber[type]):
+        error_msg+= "Invalid Syntax for "+list[0]+"\n"  #if the number of words don't match with the number in the dictionary 
+        return False                                    #gives the return value to work with
+    return True
+
+
+def registerNaming (type, line):                #checks for the register naming
+    list= line.split()
+    c=0
+    global error_msg
+    for i in list[1:]:
+        if i in registers:
+            c+=1                                #if the registers found are valid and match the number in the dictionary
+    if c!= registerNumber[type]:
+        error_msg+= "Typos in register name."   #if the number of words don't match
+        return False
+    return True
+
+
 
 def convert_to_binary(a):
     stri = ""
@@ -162,6 +185,18 @@ for line in Isa.readlines():
                 if (words[2] == "FLAGS"):
                     flag_spot =1
                 
+
+        if(syntax(instr_type, line)): #checks for the syntax once the type is established
+            continue
+        elif (error_msg!=""): #if the error msg is empty, the rest of the code executed
+            break
+
+               
+        if(registerNaming(instr_type, line)): #checks for the register naming once the type is established
+            continue
+        elif (error_msg!=""): #if the error msg is empty, the rest of the code executed
+            break
+
         
         if instr_type=='C':
             if(len(words)==3):# the expected length for this instruction type
