@@ -1,2 +1,4 @@
 #!/bin/bash
+cd --
+cd downloads/CO_Assignment/automatedTesting
 python3 src/main.py $@
