@@ -214,10 +214,17 @@ for line in Isa.readlines():
             if(len(words) == 3):
                 
                 reg = registers.get(words[1])
-                memory = convert_to_binary(line_number)
-                binary_code = opcode + reg+(8-len(memory))*'0' + memory + '\n'
-                binary.write(binary_code)
-                
+                # print(words[2])
+                # print(variables)
+                if (words[2] in variables):
+                    memory = convert_to_binary(line_number)
+                    binary_code = opcode + reg+(8-len(memory))*'0' + memory + '\n'
+                    binary.write(binary_code)
+                    line_number+=1
+                elif(len(words[2]) == 8):
+                    binary_code = opcode + reg + words[2] + '\n'
+                    binary.write(binary_code)
+                    
             else:
                 error_msg += "Invalid Syntax for "+words[0] + '\n'
                 break
@@ -273,9 +280,13 @@ for line in Isa.readlines():
             
 # now if the above code doesn't run then its either a variable declaration or typo in instruction name
     elif (words[0]=='var' and len(used_instr)==0):# len(used_instr) ensures that no other instr was used before a var declaration
-        if (words[0].isalnum() ):
-            if('_' in words[0]):
-                variables.append(words[1])
+        c = 0
+        for i in words[1]:
+            if (i.isalnum() or i == '_'):
+                c+=1
+        if (c == len(words[1])):
+            
+            variables.append(words[1])
         else:
             error_msg+="Improper variable naming"
             break
