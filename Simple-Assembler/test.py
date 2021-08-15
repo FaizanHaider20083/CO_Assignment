@@ -145,6 +145,7 @@ label_line = {}
 flag_spot = 0
 variable_lines = {}
 
+
 # most print commands here are debug statements
 passone()
 
@@ -268,9 +269,8 @@ for line in Isa.readlines():
                     # print("memory",memory)
 
                     # print("memory1",memory1)
-                    if (memory == memory1): 
-                        print("yes")
-                    binary_code = opcode + reg+(8-len(memory1))*'0' + memory1+ '\n'
+                    
+                    binary_code = opcode + reg+(8-len(memory))*'0' + memory+ '\n'
                     binary.write(binary_code)
                     
                     
@@ -340,7 +340,7 @@ for line in Isa.readlines():
         if (c == len(words[1])):
             
             variables.append(words[1])
-            variable_lines[words[1]] = line_number-1
+            variable_lines[words[1]] = line_number
             line_number +=1
         else:
             error_msg+="Improper variable naming"
