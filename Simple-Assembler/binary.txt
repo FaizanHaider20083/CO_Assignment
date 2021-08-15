@@ -1,1 +1,1 @@
-hlt instruction is not the last instruction
+1001100000000000

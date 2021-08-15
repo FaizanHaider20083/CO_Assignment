@@ -7,7 +7,7 @@ instructions is a dict storing op codes and binary codes
 types is storing op code and instruction type
 registers is mapping register name to address
 used_instr keeps track of which opcodes were used or attempted to use
-variables stores any var declarations
+variables stores any var declarationsr
 error msg is a string that prints out the error
 '''
 def label_check(line,iteration):
@@ -148,6 +148,7 @@ variable_lines = {}
 
 # most print commands here are debug statements
 passone()
+error_msg = ""
 
 Isa = open("isa.txt",'r')
 for line in Isa.readlines():
