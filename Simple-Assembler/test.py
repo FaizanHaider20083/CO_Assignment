@@ -12,6 +12,8 @@ error msg is a string that prints out the error
 '''
 def label_check(line,iteration):
     words= line.split()
+    if (len(line.strip()) == 0):
+        return
     global error_msg
     
     
@@ -56,20 +58,7 @@ def label_check(line,iteration):
         if len(words)== 0: #checks if an instruction is followed by the name or not
             error_msg+="Label not followed by an instruction."  
             return False
-  
-
-def registerNaming (type, line):
-    list= line.split()
-    c=0
-    global error_msg
-    for i in list[1:]:
-        if i in registers:
-            c+=1
-    if c!= registerNumber[type]:
-        error_msg+= "Typos in register name."
-        return False
-    return True
-
+    
 
 def convert_to_binary(a):
     stri = ""
@@ -120,8 +109,6 @@ def passone():
 instructions = {"hlt":"10011","je":'10010',"jgt":'10001',"jlt":'10000',"jmp":'01111',"cmp":'01110',"not":'01101',"mul":'00110',"div":'00111',"rs":'01000',"ls":'01001',"xor":'01010',"or":'01011',"and":'01100',"add":'00000',"sub":'00001',"mov":'00010',"ld":'00100',"st":'00101'}
 types = {"hlt":"F","je":'E',"jgt":'E',"jlt":'E',"jmp":'E',"cmp":'C',"not":'C',"mul":'A',"div":'C',"rs":'B',"ls":'B',"xor":'A',"or":'A',"and":'A',"add":'A',"sub":'A',"mov":'B',"ld":'D',"st":'D'}
 registers={'R0':"000",'R1':"001",'R2':"010",'R3':"011",'R4':"100",'R5':"101",'R6':"110",'flags':"111"}
-registerNumber  = {"A": 3, "B": 1, "C": 2, "D": 1, "E": 0, "F": 0 }
-
 used_instr=[]
 variables=[]
 labels= []
@@ -131,6 +118,7 @@ line_number = 0
 ex = 0
 label_line = {}
 flag_spot = 0
+variable_lines = {}
 
 # most print commands here are debug statements
 passone()
@@ -142,6 +130,9 @@ for line in Isa.readlines():
     
    
     words= line.split()
+
+    if (len(line.strip()) == 0):
+        continue
     
     
     #LABELS
@@ -149,7 +140,7 @@ for line in Isa.readlines():
     if (label_check(line,1)):
        words = words[1:]
 
-    if (error_msg != ""):   #or else: gives the returned value as false; that implies error_msg== ""
+    if (error_msg != ""):
         break
     
     
@@ -171,10 +162,6 @@ for line in Isa.readlines():
                 if (words[2] == "FLAGS"):
                     flag_spot =1
                 
-        if(registerNaming(instr_type, line)):
-            continue
-        elif (error_msg!=""):
-            break
         
         if instr_type=='C':
             if(len(words)==3):# the expected length for this instruction type
@@ -201,11 +188,11 @@ for line in Isa.readlines():
             if(len(words)==3):  
                 reg = registers.get(words[1])# storing the memory address
                 if (words[2][0] == '$'):
-                    immediate = words[2]
+                    immedaite = words[2]
                     
-                    immediate = int(immediate[1:])
+                    immedaite = int(immedaite[1:])
                 elif(words[2] in variables):
-                    immediate = variables[words[2]]
+                    immedaite = variables[words[2]]
                 
                 else:
                     error_msg += "Invalid Syntax for " + words[0] + "\n"
@@ -213,16 +200,16 @@ for line in Isa.readlines():
                     break
                
                 
-                if(immediate<=255):
+                if(immedaite<=255):
                     
-                    binary_code=opcode+reg+((8-len(convert_to_binary(immediate)))*'0')+convert_to_binary(immediate)+"\n"
+                    binary_code=opcode+reg+((8-len(convert_to_binary(immedaite)))*'0')+convert_to_binary(immedaite)+"\n"
                     
 
                     binary.write(binary_code)
                 else:
-                    immediate = convert_to_binary(immediate)
-                    immediate = immediate[-9:-1]
-                    binary_code = opcode + reg + immediate + "\n"
+                    immedaite = convert_to_binary(immedaite)
+                    immedaite = immedaite[-9:-1]
+                    binary_code = opcode + reg + immedaite + "\n"
                     binary.write(binary_code)
                     
             else:
@@ -236,10 +223,17 @@ for line in Isa.readlines():
                 # print(words[2])
                 # print(variables)
                 if (words[2] in variables):
-                    memory = convert_to_binary(line_number)
-                    binary_code = opcode + reg+(8-len(memory))*'0' + memory + '\n'
+                    memory = convert_to_binary(variable_lines[words[2]])
+                    memory1 = convert_to_binary(line_number-1)
+                    # print("memory",memory)
+
+                    # print("memory1",memory1)
+                    if (memory == memory1): 
+                        print("yes")
+                    binary_code = opcode + reg+(8-len(memory1))*'0' + memory1+ '\n'
                     binary.write(binary_code)
-                    line_number+=1
+                    
+                    
                 elif(len(words[2]) == 8):
                     binary_code = opcode + reg + words[2] + '\n'
                     binary.write(binary_code)
@@ -306,6 +300,8 @@ for line in Isa.readlines():
         if (c == len(words[1])):
             
             variables.append(words[1])
+            variable_lines[words[1]] = line_number-1
+            line_number +=1
         else:
             error_msg+="Improper variable naming"
             break
@@ -332,6 +328,7 @@ for line in binary.readlines():
     print(line,end="")
 binary.close()
 #print(label_line)
+#print(variable_lines)
 
 
 
