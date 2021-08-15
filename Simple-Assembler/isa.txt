@@ -1,3 +1,2 @@
-mov R2 555
-hlt
-
+hlt 
+var x

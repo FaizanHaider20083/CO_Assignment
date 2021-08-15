@@ -1,1 +1,1 @@
-Invalid Syntax for mov
+hlt instruction is not the last instruction

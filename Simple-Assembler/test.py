@@ -133,6 +133,11 @@ for line in Isa.readlines():
     #checking for label to remove the label and move ahead with the instruction following the label name
     if (label_check(line,1)):
        words = words[1:]
+
+    if (error_msg != ""):
+        break
+    
+    
     #if no errors are encountered, the rest of the words are now checked for the instructions         
       
     
