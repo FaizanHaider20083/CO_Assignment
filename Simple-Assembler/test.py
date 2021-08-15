@@ -198,11 +198,15 @@ for line in Isa.readlines():
         # print(opcode,instr_type)#debug statement
         
         if words[0]=="mov" :   #to keep the overloading of the two mov instructions in check
-            if (words[2] in registers or words[2] == "FLAGS"):  #by default type is set as B,
-                instr_type= "C"  #if the 3rd word is a register, type is redefined as C
-                mov_overload = 1
-                if (words[2] == "FLAGS"):
-                    flag_spot =1
+            if (len(words) == 3):
+                if (words[2] in registers or words[2] == "FLAGS"):  #by default type is set as B,
+                    instr_type= "C"  #if the 3rd word is a register, type is redefined as C
+                    mov_overload = 1
+                    if (words[2] == "FLAGS"):
+                        flag_spot =1
+            else :
+                error_msg += "Wrong syntax for mov \n"
+                break
                 
 
         if(syntax(instr_type, words)): #checks for the syntax once the type is established

@@ -1,2 +1,3 @@
+mov R2
 hlt
-hlt
+

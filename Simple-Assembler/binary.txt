@@ -1,1 +1,1 @@
-Multiple hlt instructions
+Wrong syntax for mov 
