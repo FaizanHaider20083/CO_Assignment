@@ -182,6 +182,11 @@ for line in Isa.readlines():
                     immedaite = int(immedaite[1:])
                 elif(words[2] in variables):
                     immedaite = variables[words[2]]
+                
+                else:
+                    error_msg += "Invalid Syntax for " + words[0] + "\n"
+                    
+                    break
                
                 
                 if(immedaite<=255):
@@ -191,8 +196,11 @@ for line in Isa.readlines():
 
                     binary.write(binary_code)
                 else:
-                    error_msg+="Overflow Error\n"
-                    break
+                    immedaite = convert_to_binary(immedaite)
+                    immedaite = immedaite[-9:-1]
+                    binary_code = opcode + reg + immedaite + "\n"
+                    binary.write(binary_code)
+                    
             else:
                 error_msg+="Invalid Syntax for "+words[0]+"\n"
                 break
