@@ -278,6 +278,9 @@ for line in Isa.readlines():
                 elif(len(words[2]) == 8):
                     binary_code = opcode + reg + words[2] + '\n'
                     binary.write(binary_code)
+                else:
+                    error_msg += "Uninitialized memory for " + words[2] + '\n'
+                    break
                     
             else:
                 error_msg += "Invalid Syntax for "+words[0] + '\n'
