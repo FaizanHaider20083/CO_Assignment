@@ -275,7 +275,7 @@ for line in Isa.readlines():
                     linecount += 1
                     
             else:
-                error_msg+="Invalid Syntax for "+words[0]+"at linenumber " +linecount +"\n"
+                error_msg+="Invalid Syntax for "+words[0]+"at linenumber " +str(linecount) +"\n"
                 break
         elif (instr_type == 'D'):
             
