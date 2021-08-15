@@ -60,8 +60,9 @@ def label_check(line,iteration):
             return False
 
   
-def syntax (type, line):                                #checks for the syntax
-    list= line.split()
+def syntax (type, words):
+    wordsNumber  = {"A": 4, "B": 3, "C": 3, "D": 3, "E": 2, "F": 1 }                                #checks for the syntax
+    list= words
     global error_msg                                    #to use the error_msg
     if(len(list)!= wordsNumber[type]):
         error_msg+= "Invalid Syntax for "+list[0]+"\n"  #if the number of words don't match with the number in the dictionary 
@@ -69,12 +70,13 @@ def syntax (type, line):                                #checks for the syntax
     return True
 
 
-def registerNaming (type, line):                #checks for the register naming
-    list= line.split()
+def registerNaming (type, words):  
+    registerNumber  = {"A": 3, "B": 1, "C": 2, "D": 1, "E": 0, "F": 0 }              #checks for the register naming
+    list= words
     c=0
     global error_msg
     for i in list[1:]:
-        if i in registers:
+        if i in registers or i == "FLAGS":
             c+=1                                #if the registers found are valid and match the number in the dictionary
     if c!= registerNumber[type]:
         error_msg+= "Typos in register name."   #if the number of words don't match
@@ -99,7 +101,7 @@ def passone():
         hlt_flag = False
        
         for line in stdin:
-            if (("var" not in line) and (len(line) >0) ):
+            if (("var" not in line) and (len(line.strip()) >0) ):
                 line_number+=1
             if (':' in line ):
                 if(label_check(line,0)):
@@ -161,7 +163,10 @@ for line in Isa.readlines():
     #LABELS
     #checking for label to remove the label and move ahead with the instruction following the label name
     if (label_check(line,1)):
+       
        words = words[1:]
+       
+       
 
     if (error_msg != ""):
         break
@@ -186,14 +191,14 @@ for line in Isa.readlines():
                     flag_spot =1
                 
 
-        if(syntax(instr_type, line)): #checks for the syntax once the type is established
-            continue
+        if(syntax(instr_type, words)): #checks for the syntax once the type is established
+            pass
         elif (error_msg!=""): #if the error msg is empty, the rest of the code executed
             break
 
                
-        if(registerNaming(instr_type, line)): #checks for the register naming once the type is established
-            continue
+        if(registerNaming(instr_type, words)): #checks for the register naming once the type is established
+            pass
         elif (error_msg!=""): #if the error msg is empty, the rest of the code executed
             break
 
