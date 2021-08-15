@@ -56,7 +56,20 @@ def label_check(line,iteration):
         if len(words)== 0: #checks if an instruction is followed by the name or not
             error_msg+="Label not followed by an instruction."  
             return False
-    
+  
+
+def registerNaming (type, line):
+    list= line.split()
+    c=0
+    global error_msg
+    for i in list[1:]:
+        if i in registers:
+            c+=1
+    if c!= registerNumber[type]:
+        error_msg+= "Typos in register name."
+        return False
+    return True
+
 
 def convert_to_binary(a):
     stri = ""
@@ -107,6 +120,8 @@ def passone():
 instructions = {"hlt":"10011","je":'10010',"jgt":'10001',"jlt":'10000',"jmp":'01111',"cmp":'01110',"not":'01101',"mul":'00110',"div":'00111',"rs":'01000',"ls":'01001',"xor":'01010',"or":'01011',"and":'01100',"add":'00000',"sub":'00001',"mov":'00010',"ld":'00100',"st":'00101'}
 types = {"hlt":"F","je":'E',"jgt":'E',"jlt":'E',"jmp":'E',"cmp":'C',"not":'C',"mul":'A',"div":'C',"rs":'B',"ls":'B',"xor":'A',"or":'A',"and":'A',"add":'A',"sub":'A',"mov":'B',"ld":'D',"st":'D'}
 registers={'R0':"000",'R1':"001",'R2':"010",'R3':"011",'R4':"100",'R5':"101",'R6':"110",'flags':"111"}
+registerNumber  = {"A": 3, "B": 1, "C": 2, "D": 1, "E": 0, "F": 0 }
+
 used_instr=[]
 variables=[]
 labels= []
@@ -134,7 +149,7 @@ for line in Isa.readlines():
     if (label_check(line,1)):
        words = words[1:]
 
-    if (error_msg != ""):
+    if (error_msg != ""):   #or else: gives the returned value as false; that implies error_msg== ""
         break
     
     
@@ -156,6 +171,10 @@ for line in Isa.readlines():
                 if (words[2] == "FLAGS"):
                     flag_spot =1
                 
+        if(registerNaming(instr_type, line)):
+            continue
+        elif (error_msg!=""):
+            break
         
         if instr_type=='C':
             if(len(words)==3):# the expected length for this instruction type
@@ -182,11 +201,11 @@ for line in Isa.readlines():
             if(len(words)==3):  
                 reg = registers.get(words[1])# storing the memory address
                 if (words[2][0] == '$'):
-                    immedaite = words[2]
+                    immediate = words[2]
                     
-                    immedaite = int(immedaite[1:])
+                    immediate = int(immediate[1:])
                 elif(words[2] in variables):
-                    immedaite = variables[words[2]]
+                    immediate = variables[words[2]]
                 
                 else:
                     error_msg += "Invalid Syntax for " + words[0] + "\n"
@@ -194,16 +213,16 @@ for line in Isa.readlines():
                     break
                
                 
-                if(immedaite<=255):
+                if(immediate<=255):
                     
-                    binary_code=opcode+reg+((8-len(convert_to_binary(immedaite)))*'0')+convert_to_binary(immedaite)+"\n"
+                    binary_code=opcode+reg+((8-len(convert_to_binary(immediate)))*'0')+convert_to_binary(immediate)+"\n"
                     
 
                     binary.write(binary_code)
                 else:
-                    immedaite = convert_to_binary(immedaite)
-                    immedaite = immedaite[-9:-1]
-                    binary_code = opcode + reg + immedaite + "\n"
+                    immediate = convert_to_binary(immediate)
+                    immediate = immediate[-9:-1]
+                    binary_code = opcode + reg + immediate + "\n"
                     binary.write(binary_code)
                     
             else:
