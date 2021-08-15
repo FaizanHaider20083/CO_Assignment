@@ -1,5 +1,2 @@
-mul R1 R2 R3
-
-
-hlt
-
+hlt 
+var x
