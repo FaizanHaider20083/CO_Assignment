@@ -3,6 +3,7 @@ from sys import stdin
 instructions = {"00000":'A',"00001":'A',"00010":'B',"00011":'C',"00100":'D',"00101":'D',"00110":'A',"00111":'C',"01000":'B',"01001":'B',"01010":'A',"01011":'A',"01100":'A',"01101":'C',"01110":'C',"01111":'E',"10000":'E',"10001":'E',"10010":'E',"10011":'F'}
 registers = {"000":"0"*16,"001":"0"*16,"010":"0"*16,"011":"0"*16,"100":"0"*16,"101":"0"*16,"110":"0"*16,"111":"0"*16}
 program_counter = 0
+variables = {}
 
 
 def convert_to_decimal(a):
@@ -48,6 +49,10 @@ def memory_dump():
         else:
             print("1001100000000000")
             line_number += 1
+
+    for var in variables:
+        print(variables[var])
+        line_number += 1
     for i in range(line_number,256):
         print("0"*16)
     binary.close()
@@ -110,6 +115,10 @@ def output(category,line):
 
         elif (line[0:5] == "01101"):
             invert(line)
+
+    elif(category == 'D'):
+        if(line[0:5] == "00101"):
+            store(line)
 
         
     
@@ -268,6 +277,13 @@ def invert(line):
         else :
             string += '0'
     registers[reg1] = string
+
+
+def store(line):
+    reg = line[5:8]
+    memory = line[8:16]
+    variables[memory] = registers[reg]
+
 
 
 if (__name__ == '__main__'):
