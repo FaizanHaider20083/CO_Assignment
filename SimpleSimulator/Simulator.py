@@ -4,6 +4,18 @@ instructions = {"00000":'A',"00001":'A',"00010":'B',"00011":'C',"00100":'D',"001
 registers = {"000":"0"*16,"001":"0"*16,"010":"0"*16,"011":"0"*16,"100":"0"*16,"101":"0"*16,"110":"0"*16,"111":"0"*16}
 program_counter = 0
 
+
+def convert_to_decimal(a):
+    num  = 0
+    i =0
+    for char in a[::-1]:
+        
+
+        num += (2**i)*int(char)
+        
+        i += 1
+    return num
+
 def convert_to_binary(a):
     stri = ""
     while(a>0):
@@ -63,6 +75,11 @@ def output(category,line):
         if (line[0:5] == "00010"):
             mov_register_imm(line)
             printregisters()
+
+    elif (category == 'A'):
+        if (line[0:5] == "00000"):
+            add(line)
+            printregisters()
             
 
 def mov_register_imm(line):
@@ -86,6 +103,14 @@ def print_programcounter():
     bin = convert_to_binary(program_counter)
     bin = (8-len(bin))*'0' + bin
     print(bin,end =" ")
+
+def add(line):
+    reg2 = line[10:13]
+    reg3 = line[13:16]
+    total = convert_to_decimal(registers[reg2]) + convert_to_decimal(registers[reg3])
+    total = convert_to_binary(total)
+    reg1 = line[7:10]
+    registers[reg1]  = ((16-len(total))*'0') + total 
 
 if (__name__ == '__main__'):
     input()
