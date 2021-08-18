@@ -74,12 +74,26 @@ def output(category,line):
     elif (category == 'B'):
         if (line[0:5] == "00010"):
             mov_register_imm(line)
-            printregisters()
+            
 
     elif (category == 'A'):
         if (line[0:5] == "00000"):
             add(line)
-            printregisters()
+            
+
+    elif (category == 'C'):
+        if(line[0:5] == "00011"):
+            mov_reg(line)
+    
+
+    printregisters()
+
+
+def mov_reg(line):
+    reg1 = line[10:13]
+    reg2 = line[13:16]
+
+    registers[reg1] = registers[reg2]
             
 
 def mov_register_imm(line):
