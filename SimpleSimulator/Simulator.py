@@ -74,16 +74,44 @@ def output(category,line):
     elif (category == 'B'):
         if (line[0:5] == "00010"):
             mov_register_imm(line)
+        elif (line[0:5] == "01000"):
+            right_shift(line)
+        
+        elif(line[0:5] == "01001"):
+            left_shift(line)
             
 
     elif (category == 'A'):
         if (line[0:5] == "00000"):
             add(line)
+        elif (line[0:5] == "00001"):
+            substract(line)
+
+        elif(line[0:5] == "00110"):
+            multiply(line)
+
+        elif(line[0:5] == "01011"):
+            Or(line)
+
+        elif(line[0:5] == "01010"):
+            xor(line)
+
+        elif(line[0:5] == "01100"):
+            And(line)
+        
             
 
     elif (category == 'C'):
         if(line[0:5] == "00011"):
             mov_reg(line)
+
+        elif(line[0:5] == "00111"):
+            divide(line)
+
+        elif (line[0:5] == "01101"):
+            invert(line)
+
+        
     
 
     printregisters()
@@ -125,6 +153,122 @@ def add(line):
     total = convert_to_binary(total)
     reg1 = line[7:10]
     registers[reg1]  = ((16-len(total))*'0') + total 
+
+
+def substract(line):
+    reg2 = line[10:13]
+    reg3 = line[13:16]
+    reg1 = line[7:10]
+    total = convert_to_decimal(registers[reg2]) - convert_to_decimal(registers[reg3])
+    if (total <0 ):
+        registers[reg1] = '0'*16
+        return
+        #setoverflow
+    total = convert_to_binary(total)
+    
+    registers[reg1]  = ((16-len(total))*'0') + total 
+
+
+def multiply(line):
+    reg2 = line[10:13]
+    reg3 = line[13:16]
+    total = convert_to_decimal(registers[reg2]) * convert_to_decimal(registers[reg3])
+    total = convert_to_binary(total)
+    reg1 = line[7:10]
+    registers[reg1]  = ((16-len(total))*'0') + total 
+
+def Or(line):
+    reg2 = line[10:13]
+    reg3 = line[13:16]
+    reg1 = line[7:10]
+
+    string = ""
+
+    for i in range(0,16):
+        string += (registers[reg2][i] or registers[reg3][i])
+    registers[reg1] = string
+
+
+def And(line):
+    reg2 = line[10:13]
+    reg3 = line[13:16]
+    reg1 = line[7:10]
+
+    string = ""
+
+    for i in range(0,16):
+        string += (registers[reg2][i] and registers[reg3][i])
+    registers[reg1] = string
+
+def xor(line):
+    reg2 = line[10:13]
+    reg3 = line[13:16]
+    reg1 = line[7:10]
+
+    string = ""
+
+    for i in range(0,16):
+        if (registers[reg2][i] == registers[reg3][i]):
+            string += '0'
+        else :
+            string += '1'
+    registers[reg1] = string
+
+
+def left_shift(line):
+    reg = line[5:8]
+    shift_value = convert_to_decimal(line[8:16])
+    value = registers[reg]
+    if (shift_value <= 16):
+        value = value[shift_value:]
+        value += (16-len(value))*'0'
+        registers[reg] = value
+    else:
+        registers[reg] = '0'*16
+        #overflow ?
+
+
+
+def right_shift(line):
+    reg = line[5:8]
+    shift_value = convert_to_decimal(line[8:16])
+    value = registers[reg]
+    if (shift_value <= 16):
+        value2 = value[:len(value) -shift_value]
+        value = (16-len(value2))*'0' + value2
+        registers[reg] = value
+    else:
+        registers[reg] = '0'*16
+        #overflow ?
+
+def divide(line):
+    reg1 = line[10:13]
+    reg2 = line[13:16]
+
+    quotient = convert_to_decimal(registers[reg1])//convert_to_decimal(registers[reg2])
+    remainder =  convert_to_decimal(registers[reg1])%convert_to_decimal(registers[reg2])
+    quotient = convert_to_binary(quotient)
+    quotient = (16-len(quotient))*'0' + quotient
+    remainder = convert_to_binary(remainder)
+    quotient = (16-len(remainder))*'0' + remainder
+
+    registers['000'] = quotient
+    registers['001'] = remainder
+
+
+def invert(line):
+    reg1 = line[10:13]
+    reg2 = line[13:16]
+
+    string = ""
+
+    for i in registers[reg2]:
+        if (i == '0'):
+            string+= '1'
+        else :
+            string += '0'
+    registers[reg1] = string
+
 
 if (__name__ == '__main__'):
     input()
