@@ -4,6 +4,8 @@ instructions = {"00000":'A',"00001":'A',"00010":'B',"00011":'C',"00100":'D',"001
 registers = {"000":"0"*16,"001":"0"*16,"010":"0"*16,"011":"0"*16,"100":"0"*16,"101":"0"*16,"110":"0"*16,"111":"0"*16}
 program_counter = 0
 variables = {}
+flag_reset = 0
+flag_pass = 0
 
 
 def convert_to_decimal(a):
@@ -73,6 +75,8 @@ def process():
 
 
 def output(category,line):
+    global flag_reset
+    global flag_pass
     if (category == 'F'):
         printregisters()
         return
@@ -116,6 +120,9 @@ def output(category,line):
         elif (line[0:5] == "01101"):
             invert(line)
 
+        elif (line[0:5] == "01110"):
+            compare(line)
+
     elif(category == 'D'):
         if(line[0:5] == "00101"):
             store(line)
@@ -123,7 +130,19 @@ def output(category,line):
         
     
 
+    
+    
+    if(flag_reset == 1):
+        if (flag_pass == 1):
+            registers['111'] = '0'*16
+            flag_reset = 0
+            flag_pass  = 0
+        else :
+            flag_pass = 1
+
     printregisters()
+
+    
 
 
 def mov_reg(line):
@@ -288,6 +307,31 @@ def load(line):
     reg = line[5:8]
     memory = line[8:16]
     registers[reg] = variables[memory]
+
+def compare(line):
+    global flag_reset
+
+    reg1 = line[10:13]
+    reg2 = line[13:16]
+    val1 = convert_to_decimal(registers[reg1])
+    val2 = convert_to_decimal(registers[reg2])
+
+    flag = registers['111']
+
+    if (val1 == val2):
+        flag = flag[:15] + '1'
+        registers['111'] = flag
+        
+
+    elif (val1 > val2):
+        flag = flag[:14] + '1' + flag[15]
+        registers['111'] = flag
+
+    else:
+        flag = flag[:13] + '1' + flag[14:16] 
+        registers['111'] = flag
+
+    flag_reset = 1
 
 
 
