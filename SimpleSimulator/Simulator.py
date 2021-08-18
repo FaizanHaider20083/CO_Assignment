@@ -284,6 +284,11 @@ def store(line):
     memory = line[8:16]
     variables[memory] = registers[reg]
 
+def load(line):
+    reg = line[5:8]
+    memory = line[8:16]
+    registers[reg] = variables[memory]
+
 
 
 if (__name__ == '__main__'):
