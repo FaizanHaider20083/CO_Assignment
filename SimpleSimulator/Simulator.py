@@ -7,8 +7,9 @@ variables = {}
 flag_reset = 0
 flag_pass = 0
 
+contd=0
 
-def convert_to_decimal(a):
+def convert_to_decimal(a):   #to convert to decimal 
     num  = 0
     i =0
     for char in a[::-1]:
@@ -19,7 +20,7 @@ def convert_to_decimal(a):
         i += 1
     return num
 
-def convert_to_binary(a):
+def convert_to_binary(a):   #to convert to binary
     stri = ""
     while(a>0):
         stri += str(a%2)
@@ -28,24 +29,23 @@ def convert_to_binary(a):
 
 
 def input():
-    binary = open("binary.txt",'w')
+    binary = open("binary.txt",'w')           #opens the binary file
     try:
         for line in stdin:
-            binary.write(line )
-            if ("1001100000000000" in line):
-                return
+            binary.write(line )               #writes the binary instructions into the file
+            if ("1001100000000000" in line):  #to return once the halt is reached
+                return 
     except EOFError:
-       
-        
+
         binary.close()
         
 
 
 def memory_dump():
     line_number = 0
-    binary = open("binary.txt",'r')
+    binary = open( "binary2.txt",'r')
     for line in binary.readlines():
-        if ("10011" not in line):
+        if ("1001100000000000" != line):
             print(line,end="")
             line_number += 1
         else:
@@ -65,18 +65,26 @@ def process():
     global instructions
     global program_counter
     binary = open("binary.txt",'r')
+    binary2 = open("binary2.txt", 'w')
     for line in binary.readlines():
         command = line[0:5]
         category = instructions[command]
         #print("//////////////////",category,command,"//////////////////")
         output(category,line)
+        binary2.write(line)
         program_counter += 1
     binary.close()
+    binary2.close()
 
 
+    
+    
+    
 def output(category,line):
     global flag_reset
     global flag_pass
+    global program_counter
+
     if (category == 'F'):
         printregisters()
         return
@@ -127,11 +135,34 @@ def output(category,line):
         if(line[0:5] == "00101"):
             store(line)
 
+            
+            
+    elif (category == 'E'):
+        global contd
+        jmp=0
+        flag= registers['111']
+        if (line[0:5]== "10000"):   # inst : jump if less than
+            if (flag[13]==1 ):      # if L=1, jump
+                jmp= 1
+        elif (line[0:5]== "10001"): # inst : jump if greater than
+            if (flag[14]==1 ):      # if G=1, jump
+                jmp= 1
+        elif (line[0:5]== "10010"): # inst : jump if greater than
+            if (flag[15]==1 ):      # if E=1, jump
+                jmp= 1
+        else: # that is, line[0:5]== "01111",  inst : jump
+            jmp=1
         
-    
 
-    
-    
+        contd= program_counter  # PC value stored
+        if jmp==1:
+            jump(line)
+
+        program_counter= contd  # PC value restored
+            
+            
+            
+            
     if(flag_reset == 1):
         if (flag_pass == 1):
             registers['111'] = '0'*16
@@ -334,6 +365,41 @@ def compare(line):
     flag_reset = 1
 
 
+def jump(line1):
+    global contd
+    global program_counter                                #to use as local program counter
+    mem_address= convert_to_decimal( line1[8:16])         #mem_address as a line number
+    
+    binaryy = open("binary.txt",'r')
+
+    binary2 = open("binary2.txt", 'w')
+
+    program_counter=0                                       #PC reset
+
+    for line in binaryy.readlines():                        #re reads the file binary file
+        program_counter+=1                                  #PC incremented
+        if mem_address >= program_counter:                  #ignores lines before the mem_address
+            continue
+        elif mem_address < contd:                           #checks if the mem address is before the present execution line
+            if program_counter <= contd :                   #while local c is < global PC
+                command = line[0:5]
+                category = instructions[command]
+                output(category, line)
+                binary2.write(line)
+                
+        elif mem_address > contd:                           #checks if the mem address is after the present execution line
+            command = line[0:5]                             #simply the rest of the code is executed
+            category = instructions[command]
+            output(category, line)
+            binary2.write(line)
+    
+                  
+    binaryy.close()
+    binary2.close()
+    
+    
+    
+    
 
 if (__name__ == '__main__'):
     input()
