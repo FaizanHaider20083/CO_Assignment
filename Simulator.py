@@ -1,4 +1,5 @@
 from sys import stdin
+import matplotlib.pyplot as plt
 
 instructions = {"00000":'A',"00001":'A',"00010":'B',"00011":'C',"00100":'D',"00101":'D',"00110":'A',"00111":'C',"01000":'B',"01001":'B',"01010":'A',"01011":'A',"01100":'A',"01101":'C',"01110":'C',"01111":'E',"10000":'E',"10001":'E',"10010":'E',"10011":'F'}
 registers = {"000":"0"*16,"001":"0"*16,"010":"0"*16,"011":"0"*16,"100":"0"*16,"101":"0"*16,"110":"0"*16,"111":"0"*16}
@@ -7,7 +8,7 @@ variables = {}
 flag_reset = 0
 flag_pass = 0
 contd=0
-
+memory_addresses=[]
 def convert_to_decimal(a):   #to convert to decimal 
     num  = 0
     i =0
@@ -63,6 +64,7 @@ def memory_dump():
 def process():
     global instructions
     global program_counter
+    global memory_addresses
     binary = open("binary.txt",'r')
     binary2 = open("binary2.txt", 'w')
     for line in binary.readlines():
@@ -71,7 +73,10 @@ def process():
         #print("//////////////////",category,command,"//////////////////")
         output(category,line)
         binary2.write(line)
+        #memory_addresses.append(convert_to_decimal(line[8:16]))
+        memory_addresses.append(program_counter)
         program_counter += 1
+
     binary.close()
     binary2.close()
 
@@ -349,13 +354,17 @@ def invert(line):
 
 
 def store(line):
+    global memory_addresses
     reg = line[5:8]
     memory = line[8:16]
+    
     variables[memory] = registers[reg]
 
 def load(line):
+    global memory_addresses
     reg = line[5:8]
     memory = line[8:16]
+    
     registers[reg] = variables[memory]
 
 def compare(line):
@@ -385,6 +394,7 @@ def compare(line):
 
 
 def jump(line1):
+        
     global contd
     global program_counter                                #to use as local program counter
     mem_address= convert_to_decimal( line1[8:16])         #mem_address as a line number
@@ -411,17 +421,19 @@ def jump(line1):
             category = instructions[command]
             output(category, line)
             binary2.write(line)
-    
-                  
+        
     binaryy.close()
     binary2.close()
     
-    
-    
-    
+def graph_bonus(memory_addresses):
+    cycles=range(1,len(memory_addresses)+1)
+    plt.scatter(cycles,memory_addresses)
+    plt.xlabel("Cycle")
+    plt.ylabel("Memory Address")
+    plt.show()
 
 if (__name__ == '__main__'):
     input()
     process()
     memory_dump()
-        
+    graph_bonus(memory_addresses)        
