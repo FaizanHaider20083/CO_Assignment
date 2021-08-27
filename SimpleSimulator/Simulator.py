@@ -1,5 +1,5 @@
 from sys import stdin
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 instructions = {"00000":'A',"00001":'A',"00010":'B',"00011":'C',"00100":'D',"00101":'D',"00110":'A',"00111":'C',"01000":'B',"01001":'B',"01010":'A',"01011":'A',"01100":'A',"01101":'C',"01110":'C',"01111":'E',"10000":'E',"10001":'E',"10010":'E',"10011":'F'}
 registers = {"000":"0"*16,"001":"0"*16,"010":"0"*16,"011":"0"*16,"100":"0"*16,"101":"0"*16,"110":"0"*16,"111":"0"*16}
@@ -490,4 +490,4 @@ if (__name__ == '__main__'):
     input()
     process()
     memory_dump()
-    #graph_bonus(memory_addresses)        
+    graph_bonus(memory_addresses)        
