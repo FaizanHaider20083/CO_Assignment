@@ -56,13 +56,7 @@ def invert(a):
 
 if __name__ == "__main__":
     print("Hello Assembler")
-    i = 0
-    for line in sys.stdin:
+    print(convert_to_binary(16386810))
     
-        code.append(line.strip())
-        if line.strip() == 'hlt':
-            for coding in code:
-                print(coding)
 
-            break
 

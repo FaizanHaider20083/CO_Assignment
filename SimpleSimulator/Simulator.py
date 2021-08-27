@@ -1,4 +1,5 @@
 from sys import stdin
+#import matplotlib.pyplot as plt
 
 instructions = {"00000":'A',"00001":'A',"00010":'B',"00011":'C',"00100":'D',"00101":'D',"00110":'A',"00111":'C',"01000":'B',"01001":'B',"01010":'A',"01011":'A',"01100":'A',"01101":'C',"01110":'C',"01111":'E',"10000":'E',"10001":'E',"10010":'E',"10011":'F'}
 registers = {"000":"0"*16,"001":"0"*16,"010":"0"*16,"011":"0"*16,"100":"0"*16,"101":"0"*16,"110":"0"*16,"111":"0"*16}
@@ -6,9 +7,10 @@ program_counter = 0
 variables = {}
 flag_reset = 0
 flag_pass = 0
-
 contd=0
-
+memory_addresses=[]
+jmp = 0
+location = 0
 def convert_to_decimal(a):   #to convert to decimal 
     num  = 0
     i =0
@@ -43,7 +45,7 @@ def input():
 
 def memory_dump():
     line_number = 0
-    binary = open( "binary2.txt",'r')
+    binary = open( "binary.txt",'r')
     for line in binary.readlines():
         if ("1001100000000000" != line):
             print(line,end="")
@@ -64,15 +66,32 @@ def memory_dump():
 def process():
     global instructions
     global program_counter
+    global memory_addresses
+    global jmp
     binary = open("binary.txt",'r')
     binary2 = open("binary2.txt", 'w')
-    for line in binary.readlines():
+    line = binary.readline()
+    while(line != ''):
+        
         command = line[0:5]
         category = instructions[command]
         #print("//////////////////",category,command,"//////////////////")
         output(category,line)
+        if (jmp == 1):
+            jmp = 0
+           
+            binary.seek(location*17)
+            line = binary.readline()
+        
+            command = line[0:5]
+            category = instructions[command]
+            output(category,line)
         binary2.write(line)
+        #memory_addresses.append(convert_to_decimal(line[8:16]))
+        memory_addresses.append(program_counter)
         program_counter += 1
+        line =  binary.readline()
+
     binary.close()
     binary2.close()
 
@@ -84,10 +103,11 @@ def output(category,line):
     global flag_reset
     global flag_pass
     global program_counter
+    hlt = 0
 
     if (category == 'F'):
-        printregisters()
-        return
+        
+        hlt = 1
     elif (category == 'B'):
         if (line[0:5] == "00010"):
             mov_register_imm(line)
@@ -138,32 +158,34 @@ def output(category,line):
             
             
     elif (category == 'E'):
+        
         global contd
-        jmp=0
+        global jmp
+        global location
         flag= registers['111']
         if (line[0:5]== "10000"):   # inst : jump if less than
-            if (flag[13]==1 ):      # if L=1, jump
+            if (flag[13]== '1' ):      # if L=1, jump
                 jmp= 1
         elif (line[0:5]== "10001"): # inst : jump if greater than
-            if (flag[14]==1 ):      # if G=1, jump
+            
+            if (flag[14]== '1' ):      # if G=1, jump
                 jmp= 1
-        elif (line[0:5]== "10010"): # inst : jump if greater than
-            if (flag[15]==1 ):      # if E=1, jump
+        elif (line[0:5]== "10010"): # inst : jump if equal
+            if (flag[15]== '1' ):      # if E=1, jump
                 jmp= 1
         else: # that is, line[0:5]== "01111",  inst : jump
             jmp=1
         
 
         contd= program_counter  # PC value stored
-        if jmp==1:
-            jump(line)
+        
 
-        program_counter= contd  # PC value restored
-            
+        
             
             
             
     if(flag_reset == 1):
+       # print('here')
         if (flag_pass == 1):
             registers['111'] = '0'*16
             flag_reset = 0
@@ -171,7 +193,19 @@ def output(category,line):
         else :
             flag_pass = 1
 
-    printregisters()
+    if (jmp!= 1):
+        
+        printregisters()
+    if jmp==1:
+            
+        location = convert_to_decimal(line[8:16])
+        printregisters()
+        program_counter = location
+            
+        
+
+    if (hlt == 1): 
+        return
 
     
 
@@ -193,11 +227,21 @@ def mov_register_imm(line):
 
 
 def printregisters():
+    global program_counter
 
     print_programcounter()
+    out = open("output.txt",'a')
+    line = convert_to_binary(program_counter)
+    line = (8-len(line))*'0' + line + " "
     for register in registers:
         print(registers[register],end =" ")
+        line += registers[register] + " "
     print("")
+    line += "\n"
+    out.write(line)
+    
+    out.close()
+
    
 def print_programcounter():
     global program_counter
@@ -206,21 +250,36 @@ def print_programcounter():
     print(bin,end =" ")
 
 def add(line):
+    global flag_reset
     reg2 = line[10:13]
     reg3 = line[13:16]
     total = convert_to_decimal(registers[reg2]) + convert_to_decimal(registers[reg3])
-    total = convert_to_binary(total)
     reg1 = line[7:10]
-    registers[reg1]  = ((16-len(total))*'0') + total 
-
-
+    flag= registers['111']
+    if(total<2**16-1):
+        total = convert_to_binary(total)
+        registers[reg1]  = ((16-len(total))*'0') + total 
+    else:
+        total = convert_to_binary(total)
+        total = total[len(total)-16:]
+        registers[reg1] = total
+        flag= flag[0:12]+'1'+flag[13:]
+        registers['111']=flag
+        flag_reset = 1
 def substract(line):
+    global flag_reset
+    global flag_pass
     reg2 = line[10:13]
     reg3 = line[13:16]
     reg1 = line[7:10]
     total = convert_to_decimal(registers[reg2]) - convert_to_decimal(registers[reg3])
+    flag= registers['111']
     if (total <0 ):
         registers[reg1] = '0'*16
+        #print(flag[13:]+"      "+flag[12:])     
+        flag= flag[0:12]+'1'+flag[13:]
+        registers['111']=flag
+        flag_reset=1
         return
         #setoverflow
     total = convert_to_binary(total)
@@ -229,13 +288,28 @@ def substract(line):
 
 
 def multiply(line):
+    global flag_reset
+   
+    global flag_pass
     reg2 = line[10:13]
     reg3 = line[13:16]
-    total = convert_to_decimal(registers[reg2]) * convert_to_decimal(registers[reg3])
-    total = convert_to_binary(total)
     reg1 = line[7:10]
-    registers[reg1]  = ((16-len(total))*'0') + total 
-
+    
+    total = convert_to_decimal(registers[reg2]) * convert_to_decimal(registers[reg3])
+    #print(registers[reg2],registers[reg3],total)
+    
+    flag= registers['111']
+    if(total<2**16-1):
+        total = convert_to_binary(total)
+        registers[reg1]  = ((16-len(total))*'0') + total 
+        
+    else:
+        total = convert_to_binary(total)
+        total = total[len(total)-16:]
+        registers[reg1] = total
+        flag= flag[0:12]+'1'+flag[13:]
+        registers['111']=flag
+        flag_reset = 1
 def Or(line):
     reg2 = line[10:13]
     reg3 = line[13:16]
@@ -330,13 +404,17 @@ def invert(line):
 
 
 def store(line):
+    global memory_addresses
     reg = line[5:8]
     memory = line[8:16]
+    
     variables[memory] = registers[reg]
 
 def load(line):
+    global memory_addresses
     reg = line[5:8]
     memory = line[8:16]
+    
     registers[reg] = variables[memory]
 
 def compare(line):
@@ -346,7 +424,7 @@ def compare(line):
     reg2 = line[13:16]
     val1 = convert_to_decimal(registers[reg1])
     val2 = convert_to_decimal(registers[reg2])
-
+    #print(val1,val2)
     flag = registers['111']
 
     if (val1 == val2):
@@ -366,6 +444,8 @@ def compare(line):
 
 
 def jump(line1):
+    
+        
     global contd
     global program_counter                                #to use as local program counter
     mem_address= convert_to_decimal( line1[8:16])         #mem_address as a line number
@@ -376,12 +456,15 @@ def jump(line1):
 
     program_counter=0                                       #PC reset
 
+    print(mem_address,contd)
+    
     for line in binaryy.readlines():                        #re reads the file binary file
         program_counter+=1                                  #PC incremented
         if mem_address >= program_counter:                  #ignores lines before the mem_address
             continue
         elif mem_address < contd:                           #checks if the mem address is before the present execution line
             if program_counter <= contd :                   #while local c is < global PC
+                print("aaye ?")
                 command = line[0:5]
                 category = instructions[command]
                 output(category, line)
@@ -392,17 +475,19 @@ def jump(line1):
             category = instructions[command]
             output(category, line)
             binary2.write(line)
-    
-                  
+        
     binaryy.close()
     binary2.close()
     
-    
-    
-    
+def graph_bonus(memory_addresses):
+    cycles=range(1,len(memory_addresses)+1)
+    plt.scatter(cycles,memory_addresses)
+    plt.xlabel("Cycle")
+    plt.ylabel("Memory Address")
+    plt.show()
 
 if (__name__ == '__main__'):
     input()
     process()
     memory_dump()
-        
+    #graph_bonus(memory_addresses)        
